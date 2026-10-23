@@ -1,0 +1,31 @@
+{
+  "title": "为什么你能带个盆进来",
+  "video_id": "BV1QqaB6VEgc_p1",
+  "url": "https://www.bilibili.com/video/BV1QqaB6VEgc/?buvid=Y841EE86011A588D4B5596B25A18554D48FD&from_spmid=main.my-history.0.0&is_story_h5=false&mid=4sNdDkBPwXmKZ8WzTfGIEA%3D%3D&p=1&plat_id=116&share_from=ugc&share_medium=iphone&share_plat=ios&share_session_id=BB1E0431-E7E1-4375-82F6-39636F6C479F&share_source=COPY&share_tag=s_i&spmid=united.player-video-detail.0.0&timestamp=1792775906&unique_k=eSx4UL0&up_id=44748304",
+  "duration_seconds": 181.07,
+  "frame_sampling_fps": 1.0,
+  "sampled_frames": 181,
+  "image_sheets": [
+    "images/sheet_001.jpg",
+    "images/sheet_002.jpg",
+    "images/sheet_003.jpg",
+    "images/sheet_004.jpg",
+    "images/sheet_005.jpg",
+    "images/sheet_006.jpg",
+    "images/sheet_007.jpg",
+    "images/sheet_008.jpg",
+    "images/sheet_009.jpg",
+    "images/sheet_010.jpg",
+    "images/sheet_011.jpg",
+    "images/sheet_012.jpg",
+    "images/sheet_013.jpg",
+    "images/sheet_014.jpg",
+    "images/sheet_015.jpg",
+    "images/sheet_016.jpg"
+  ],
+  "subtitle_file": null,
+  "transcript_file": null,
+  "asr_note": "ASR failed: open() got an unexpected keyword argument 'metadata_errors'",
+  "generated_utc": "2026-10-23T18:27:11.099193+00:00",
+  "privacy": "Screenshots/transcript only. No original video or browser cookies uploaded."
+}
