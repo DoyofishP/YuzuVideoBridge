@@ -1,0 +1,29 @@
+{
+  "title": "！？叶枫大豪宅？！",
+  "video_id": "BV1H9am6WEbs",
+  "url": "https://www.bilibili.com/video/BV1H9am6WEbs/?share_source=copy_web&vd_source=fe78e41344dd49a3e42a3cbc0001a945",
+  "duration_seconds": 157.71,
+  "frame_sampling_fps": 1.0,
+  "sampled_frames": 158,
+  "image_sheets": [
+    "images/sheet_001.jpg",
+    "images/sheet_002.jpg",
+    "images/sheet_003.jpg",
+    "images/sheet_004.jpg",
+    "images/sheet_005.jpg",
+    "images/sheet_006.jpg",
+    "images/sheet_007.jpg",
+    "images/sheet_008.jpg",
+    "images/sheet_009.jpg",
+    "images/sheet_010.jpg",
+    "images/sheet_011.jpg",
+    "images/sheet_012.jpg",
+    "images/sheet_013.jpg",
+    "images/sheet_014.jpg"
+  ],
+  "subtitle_file": null,
+  "transcript_file": null,
+  "asr_note": "ASR failed: open() got an unexpected keyword argument 'metadata_errors'",
+  "generated_utc": "2026-10-23T18:39:36.391898+00:00",
+  "privacy": "Screenshots/transcript only. No original video or browser cookies uploaded."
+}
