@@ -121,6 +121,7 @@ def main():
     ap=argparse.ArgumentParser(description="Prepare Bilibili frames + dialogue for Yuzu via GitHub.")
     ap.add_argument("url",help="https://b23.tv/... or https://www.bilibili.com/video/BV...")
     ap.add_argument("--repo",type=Path,help="Path to an existing local clone of a PRIVATE GitHub repo")
+    ap.add_argument("--series",default="AI中转站公寓",help="Subfolder under packets (default: AI中转站公寓)")
     ap.add_argument("--push",action="store_true",help="Commit and push the prepared packet (requires --repo)")
     ap.add_argument("--browser",choices=["chrome","edge","firefox"],help="Optional: use local Bilibili browser login session")
     ap.add_argument("--fps",type=float,default=1.0,help="Visual samples per second; default 1")
@@ -134,13 +135,15 @@ def main():
         ap.error("Only HTTPS b23.tv/bilibili.com video links are accepted.")
     if args.fps<=0 or args.fps>3:
         ap.error("--fps must be >0 and <=3")
+    if not args.series.strip() or args.series in (".", "..") or any(c in args.series for c in '/\:*?"<>|') or chr(92) in args.series:
+        ap.error("--series must be a simple folder name, not a path")
     if args.push and args.repo is None:
         ap.error("--push requires --repo")
     for cmd in ("ffmpeg","ffprobe"):
         if not shutil.which(cmd):
             raise RuntimeError(f"{cmd} not found in PATH; install FFmpeg first.")
     repo = args.repo.resolve() if args.repo else None
-    base = (repo/"packets") if repo else Path.home()/"YuzuVideoBridge"/"packets"
+    base = ((repo/"packets") if repo else Path.home()/"YuzuVideoBridge"/"packets") / args.series
     if repo and not (repo/".git").exists():
         raise RuntimeError(f"{repo} is not a Git clone. Clone your PRIVATE repo first.")
     with tempfile.TemporaryDirectory(prefix="yuzu-bili-") as td:
@@ -193,7 +196,7 @@ def main():
                 run(["git","commit","-m",f"Add Bilibili visual packet {video_id}"],cwd=repo)
                 run(["git","push"],cwd=repo)
             print(f"PUSHED: {rel.as_posix()}")
-            print(f"Ask Yuzu to open: packets/{video_id}/manifest.json in your private repo.")
+            print(f"Ask Yuzu to open: {rel.as_posix()}/manifest.json in your private repo.")
 
 if __name__=="__main__":
     try: main()

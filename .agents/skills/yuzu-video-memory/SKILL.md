@@ -13,15 +13,18 @@ description: Read video packets in DoyofishP/YuzuVideoBridge, inspect timestampe
 
 ## 最短执行流程
 
-1. **建立上下文，不重复看旧图**：先读 `memory/INDEX.md`，确定已记录系列、集数、当前完成进度、用户纠正的人名/设定。必要时再读对应 `memory/EP*.md`，不要默认把前几集的图片重新读一遍。不同作品的角色和设定不得直接套用。
-2. **发现新素材**：列出 `packets/` 目录，对照索引中已记录的 packet 路径。对未记录或未完结的 packet 读 `manifest.json`。从 manifest 获得 `title`、`video_id`、`url`、`duration_seconds`、`image_sheets`、`transcript_file` 和 `asr_note`。如无法从标题确定它属于哪部系列/第几集，可先依据用户上下文判断，必要时用“待核实”标记。
+1. **建立上下文，不重复看旧图**：先读 `memory/INDEX.md`，确定已记录系列、集数、当前完成进度、用户纠正的人名/设定。必要时再读对应 `memory/<系列>/EP*.md`，不要默认把前几集的图片重新读一遍。不同作品的角色和设定不得直接套用。
+2. **发现新素材**：列出 `packets/` 下的系列子目录（如 `MC`、`AI中转站公寓`），对照索引中已记录的 packet 路径。packet 应位于 `packets/<系列>/<video-id>/`。对未记录或未完结的 packet 读 `manifest.json`。从 manifest 获得 `title`、`video_id`、`url`、`duration_seconds`、`image_sheets`、`transcript_file` 和 `asr_note`。如无法从标题确定它属于哪部系列/第几集，可先依据用户上下文判断，必要时用“待核实”标记。
 3. **两张一组观看**：按 `manifest.image_sheets` 顺序，每次读取并**实际观察**连续两张 `sheet_*.jpg`（例：001+002、003+004），按各画面自带时间戳排序。每张 sheet 是多帧拼图，不等于一个视频帧。每观察两张，立即在当下拟定一段有依据的短文字记忆（通常 100–250 中文字，信息密度优先）。若最后剩一张，则标注“单张”。
 4. **内容规格**：每段以 `**序号｜sheet_XXX + sheet_YYY｜起始–结束。**` 起头；涵盖角色、关键行动、实际可见台词、人物互动、结果和可能延续的伏笔。人物身份不确定时用视觉描述并标“待核实”。重要的用户明确纠正可标“用户补充确认”，不要伪装成字幕证据。
 5. **按需使用字幕/ASR**：若 manifest 指向可用的 `transcript_file` 或 `subtitle_file`，先读取相关转写辅助识图，但需校验人名和语义。若 `null` 或 `asr_note` 报错，则清楚标注“无完整转写，只覆盖可见画面/字幕”。不能编造人物台词；引用应保持准确，不清楚时转为概括。
-6. **写入持久记忆**：完成一集后形成一份 `memory/EPxx_标题.md`，保留每对 sheet 的段落、视频和 packet 来源、阅读进度、人物对应与不确定项、跨集线索、结局及状态。对**另一部新系列**，优先使用 `memory/series/<series-id>/EPxx_标题.md` 防止同名集数冲突，并在总索引增加系列分组。不要把完结的系列误判为仍在连载。
+6. **写入持久记忆**：完成一集后形成一份 `memory/<系列>/EPxx_标题.md`，保留每对 sheet 的段落、视频和 packet 来源、阅读进度、人物对应与不确定项、跨集线索、结局及状态。对**另一部新系列**，使用 `memory/<series-id>/EPxx_标题.md` 防止同名集数冲突，并在总索引增加系列分组。不要把完结的系列误判为仍在连载。
 7. **更新总索引并核验**：更新 `memory/INDEX.md` 中相应集数、路径、已完成/待继续状态、sheet 数、分段数、前情速读、当前最新剧情和“下次从哪里读”。再次读取核验刚提交的文件及索引链接。告知用户完成结果、实际路径及资料限制。
 
 ## GitHub 读取方式（可用连接器时）
+
+- **系列分目录**：`packets/MC/<video-id>/` 和 `memory/MC/EPxx_标题.md` 保存已经完结的 MC 七集；`packets/AI中转站公寓/<video-id>/` 和 `memory/AI中转站公寓/EPxx_标题.md` 保存新系列。新节目不属于 MC 第八集。`manifest.image_sheets` 仍是相对视频包目录的路径，移动视频包目录不改变图片相对引用。
+- 本地脚本支持 `--series`，默认 `AI中转站公寓`。使用原有 `传入视频.bat` 可将新视频桥接素材生成到新系列目录。不要把原始视频本体当作 packet。
 
 - 使用 GitHub 连接器读取 `https://api.github.com/repos/DoyofishP/YuzuVideoBridge/contents/packets` 或对应目录，也可用其原生仓库目录浏览。
 - 文本文件用 `fetch_file(repository_full_name, path)`。
@@ -45,7 +48,7 @@ description: Read video packets in DoyofishP/YuzuVideoBridge, inspect timestampe
 
 ## 现在已有的可复用基线
 
-第一套《Minecraft》AI 群像故事**只有七集，已完结**。七集均已记录在 `memory/INDEX.md`；累计 **120 张 sheet、60 段两图记忆**。用户确认的角色是 GPT 龙娘、DeepSeek 大肥鱼、Claude、Gemini 猫猫、Qwen 千问、GLM、Grok；Grok 是趁六人睡着把她们扔入游戏的幕后黑手；打败末影龙会通关返回现实。第七集末尾 GPT 回到现实找到 Grok。**这些事实仅用于该已完结系列，不要硬套其他视频。**
+第一套《Minecraft》AI 群像故事**只有七集，已完结**。七集 packet 均已迁至 `packets/MC/`、逐集记录迁至 `memory/MC/`，总索引仍在 `memory/INDEX.md`；累计 **120 张 sheet、60 段两图记忆**。用户确认的角色是 GPT 龙娘、DeepSeek 大肥鱼、Claude、Gemini 猫猫、Qwen 千问、GLM、Grok；Grok 是趁六人睡着把她们扔入游戏的幕后黑手；打败末影龙会通关返回现实。第七集末尾 GPT 回到现实找到 Grok。**这些事实仅用于该已完结系列，不要硬套其他视频。**
 
 ## 跨会话快捷口令
 
