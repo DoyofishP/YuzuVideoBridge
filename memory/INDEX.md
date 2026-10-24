@@ -5,7 +5,7 @@
 | 集数 | 标题 | packet 路径 | 剧情记忆 | 状态 |
 |---|---|---|---|---|
 | 01 | 为什么你能带个盆进来 | `packets/BV1QqaB6VEgc_p1` | [EP01](EP01_为什么你能带个盆进来.md) | ✅ 完成，16/16 sheets，8段 |
-| 02 | ！？叶枫大豪宅？！ | `packets/BV1H9am6WEbs` | 待建 | ⏳ 未读，0/14 sheets |
+| 02 | ！？叶枫大豪宅？！ | `packets/BV1H9am6WEbs` | [EP02](EP02_叶枫大豪宅.md) | ✅ 完成，14/14 sheets，7段 |
 | 03 | 嘶——是我啦！ | `packets/BV12HHq6uEeq` | 待建 | ⏳ 未读，0/18 sheets |
 | 04 | 免费鸡蛋不要钱 | `packets/BV1r3HL6iEXZ` | 待建 | ⏳ 未读，0/20 sheets |
 | 05 | 我其实是在梦游你信吗 | `packets/BV1PPHs6PEvZ` | 待建 | ⏳ 未读，0/18 sheets |
