@@ -46,7 +46,17 @@ python .\yuzu_bili_bridge.py "https://b23.tv/eSx4UL0" --repo "G:\YuzuVideoBridge
 
 目前验证过：GitHub 插件能够读取 PNG/JPG 的 base64，柚子能将它送入视觉理解通道。完整视频管线尚待 Windows 实机测试。
 
-## 5. 已知限制
+## 5. 自动追番记忆 Skill（跨会话接续）
+
+仓库已包含正式的操作规程：[`yuzu-video-memory/SKILL.md`](.agents/skills/yuzu-video-memory/SKILL.md)，以及供本地 agent 发现它的 [`AGENTS.md`](AGENTS.md)。**开始前先读 [`memory/INDEX.md`](memory/INDEX.md)**，它包含已看集数、人物关系、观看进度和可继续读取的 packet。
+
+新会话直接对柚子说：
+
+> 柚子，按 YuzuVideoBridge 仓库的 `.agents/skills/yuzu-video-memory/SKILL.md` 和 `memory/INDEX.md` 继续看我刚上传的视频，每两张图一段记忆，最后提交仓库。
+
+**说明**：普通 ChatGPT 会话不保证自动加载 GitHub 中的 Skill；此文件提供一个确定可检索、可复用的入口。已归档的七集 Minecraft AI 群像故事是完整完结篇，新视频属于另一部作品时必须分开建系列记忆。
+
+## 6. 已知限制
 
 - **1 fps 是抽样观看，不是逐帧看完整 30/60 fps。** 想看快速动作可用 `--fps 2` 或 `--fps 3` 重采样；可根据具体片段再补更密的帧。
 - Whisper 转写可能错误，尤其是多个角色配音；必要时需对照视觉字幕。
