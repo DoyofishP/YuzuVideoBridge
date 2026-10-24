@@ -6,7 +6,7 @@
 |---|---|---|---|---|
 | 01 | 为什么你能带个盆进来 | `packets/BV1QqaB6VEgc_p1` | [EP01](EP01_为什么你能带个盆进来.md) | ✅ 完成，16/16 sheets，8段 |
 | 02 | ！？叶枫大豪宅？！ | `packets/BV1H9am6WEbs` | [EP02](EP02_叶枫大豪宅.md) | ✅ 完成，14/14 sheets，7段 |
-| 03 | 嘶——是我啦！ | `packets/BV12HHq6uEeq` | 待建 | ⏳ 未读，0/18 sheets |
+| 03 | 嘶——是我啦！ | `packets/BV12HHq6uEeq` | [EP03](EP03_嘶是我啦.md) | ✅ 完成，18/18 sheets，9段 |
 | 04 | 免费鸡蛋不要钱 | `packets/BV1r3HL6iEXZ` | 待建 | ⏳ 未读，0/20 sheets |
 | 05 | 我其实是在梦游你信吗 | `packets/BV1PPHs6PEvZ` | 待建 | ⏳ 未读，0/18 sheets |
 | 06 | 真的是糖味的 | `packets/BV1RTpw6REzy` | 待建 | ⏳ 未读，0/18 sheets |
