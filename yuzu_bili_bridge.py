@@ -135,7 +135,7 @@ def main():
         ap.error("Only HTTPS b23.tv/bilibili.com video links are accepted.")
     if args.fps<=0 or args.fps>3:
         ap.error("--fps must be >0 and <=3")
-    if not args.series.strip() or args.series in (".", "..") or any(c in args.series for c in '/\:*?"<>|') or chr(92) in args.series:
+    if not args.series.strip() or args.series in (".", "..") or any(c in args.series for c in '/:*?"<>|') or chr(92) in args.series:
         ap.error("--series must be a simple folder name, not a path")
     if args.push and args.repo is None:
         ap.error("--push requires --repo")
