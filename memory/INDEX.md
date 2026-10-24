@@ -8,7 +8,7 @@
 | 02 | ！？叶枫大豪宅？！ | `packets/BV1H9am6WEbs` | [EP02](EP02_叶枫大豪宅.md) | ✅ 完成，14/14 sheets，7段 |
 | 03 | 嘶——是我啦！ | `packets/BV12HHq6uEeq` | [EP03](EP03_嘶是我啦.md) | ✅ 完成，18/18 sheets，9段 |
 | 04 | 免费鸡蛋不要钱 | `packets/BV1r3HL6iEXZ` | [EP04](EP04_免费鸡蛋不要钱.md) | ✅ 完成，20/20 sheets，10段 |
-| 05 | 我其实是在梦游你信吗 | `packets/BV1PPHs6PEvZ` | 待建 | ⏳ 未读，0/18 sheets |
+| 05 | 我其实是在梦游你信吗 | `packets/BV1PPHs6PEvZ` | [EP05](EP05_梦游.md) | ✅ 完成，18/18 sheets，9段 |
 | 06 | 真的是糖味的 | `packets/BV1RTpw6REzy` | 待建 | ⏳ 未读，0/18 sheets |
 
 备注：按上传时间和先前提供的集数线索排列；如果视频实际顺序不同，需以视频内容为准修正。当前六个 packet 的 ASR 转写均失败，完整台词不可得；记忆只保证覆盖截图可见内容。
