@@ -73,3 +73,30 @@ python .\yuzu_bili_bridge.py "https://b23.tv/eSx4UL0" --repo "G:\YuzuVideoBridge
 - B 站的反自动化限制可能导致 412 或下载失败；脚本不保证绕过这些限制。只能使用授权访问内容。
 - `--push` 会执行 git commit/push；仓库应保持私有；请勿上传整部原片或登录凭据。
 - 初次测试只需本地运行；GitHub 模式确认能工作后，未来可以增加 Issue 任务队列，让本地常驻程序自动领取需要解析的视频链接。
+
+
+## 8. 音频 ASR 修复与旧视频补录（2026-10-25）
+
+旧版 `faster-whisper==1.2.1` 与新版 PyAV 的 `metadata_errors` 参数不兼容，可能导致所有语音转写失败。现在脚本用 **FFmpeg → 16 kHz 单声道 float32 NumPy 数据 → faster-whisper** 的路径识别，不再让 Whisper 用 PyAV 打开 WAV 文件；不必为此降级 PyAV。
+
+先更新本地仓库代码，确认安装依赖：
+
+```powershell
+cd F:\YuzuVideoBridge
+git pull --ff-only
+python -m pip install --upgrade faster-whisper numpy
+```
+
+- **新视频**：原来的 `传入视频.bat` 不用修改，依旧会自动加 `--asr`。
+- **旧视频补对白**：用原视频链接和所属系列运行，例如 MC 第三集：
+
+```powershell
+python .\yuzu_bili_bridge.py "https://www.bilibili.com/video/BV12HHq6uEeq" --repo "F:\YuzuVideoBridge" --series "MC" --asr --asr-only
+```
+
+`--asr-only` 会**重新下载原视频用于提音频**，但跳过全部抽帧、保留已有 `images/sheet_*.jpg`、`README.txt`、原始时间戳和已归档的剧情记忆文件。如果 packet 不存在，则明确报错，不生成残缺新包。把 `--series "MC"` 改成 `--series "AI中转站公寓"` 即可补录公寓番。
+
+成功后检查相应 packet 下的 `transcript.txt`，以及 `manifest.json` 中的 `transcript_file`（应为 `transcript.txt`）和 `asr_note`。运行命令后面可加 `--push` 自动提交和推送对应的 packet；也可成功后自行提交。由于原始视频不保存在仓库，**必须提供视频链接**，单靠旧图片无法重新生成音频。
+
+如果要求 `--asr` 而转录失败，程序现在将打印 `PARTIAL`、返回非零退出码并保留本地 manifest 中的错误记录；不会谎报 DONE，也不会自动 push 失败的转录。可用 `python -m unittest discover -s tests` 运行不依赖真实视频或模型下载的回归测试。
+
