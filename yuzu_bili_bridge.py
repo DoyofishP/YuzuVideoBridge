@@ -99,23 +99,39 @@ def subtitles_from_download(tempdir, packet):
 
 def offline_asr(video, packet, model):
     try:
+        import numpy as np
         from faster_whisper import WhisperModel
-    except ImportError:
-        return None, "faster-whisper not installed; run pip install faster-whisper"
-    wav=packet.parent/"_audio16k.wav"
-    run(["ffmpeg","-hide_banner","-loglevel","error","-y","-i",str(video),
-         "-vn","-ac","1","-ar","16000",str(wav)])
-    try:
-        model_instance=WhisperModel(model,device="cpu",compute_type="int8")
-        segments, meta=model_instance.transcribe(str(wav),beam_size=3,vad_filter=True)
-        lines=[]
-        for s in segments:
-            lines.append(f"[{clock(s.start)} → {clock(s.end)}] {s.text.strip()}")
-        dest=packet/"transcript.txt"
-        dest.write_text("\n".join(lines)+"\n",encoding="utf-8")
-        return dest.name, f"Whisper {model}; detected={meta.language}"
-    finally:
-        wav.unlink(missing_ok=True)
+    except ImportError as e:
+        raise RuntimeError(
+            f"ASR dependency missing: {e}. Install with: python -m pip install faster-whisper numpy"
+        ) from e
+    # Feed predecoded float32 audio straight to Whisper: this avoids PyAV's
+    # av.open(metadata_errors=...) incompatibility in faster-whisper 1.2.1.
+    proc = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin", "-i", str(video),
+         "-map", "0:a:0", "-vn", "-ac", "1", "-ar", "16000",
+         "-f", "f32le", "-acodec", "pcm_f32le", "pipe:1"],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    if proc.returncode:
+        raise RuntimeError(
+            f"FFmpeg audio decode failed: {proc.stderr.decode('utf-8', 'replace')[-2000:]}"
+        )
+    if not proc.stdout:
+        raise RuntimeError("FFmpeg extracted no audio (video may have no audio track)")
+    audio = np.frombuffer(proc.stdout, dtype="<f4")
+    model_instance = WhisperModel(model, device="cpu", compute_type="int8")
+    segments, meta = model_instance.transcribe(audio, beam_size=3, vad_filter=True)
+    lines = []
+    for s in segments:
+        spoken = s.text.strip()
+        if spoken:
+            lines.append(f"[{clock(s.start)} → {clock(s.end)}] {spoken}")
+    if not lines:
+        raise RuntimeError("Whisper produced no spoken-text segments")
+    dest = packet / "transcript.txt"
+    dest.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return dest.name, f"Whisper {model}; detected={meta.language}; decoder=ffmpeg/f32le"
 
 def main():
     ap=argparse.ArgumentParser(description="Prepare Bilibili frames + dialogue for Yuzu via GitHub.")
@@ -126,6 +142,7 @@ def main():
     ap.add_argument("--browser",choices=["chrome","edge","firefox"],help="Optional: use local Bilibili browser login session")
     ap.add_argument("--fps",type=float,default=1.0,help="Visual samples per second; default 1")
     ap.add_argument("--asr",action="store_true",help="Offline speech recognition using faster-whisper")
+    ap.add_argument("--asr-only",action="store_true",help="Repair audio transcription for an existing packet without rebuilding images (requires --asr)")
     ap.add_argument("--asr-model",default="base",help="Whisper model size: tiny/base/small/medium")
     ap.add_argument("--max-minutes",type=float,default=20,help="Safety ceiling; default 20 minutes")
     args=ap.parse_args()
@@ -139,6 +156,8 @@ def main():
         ap.error("--series must be a simple folder name, not a path")
     if args.push and args.repo is None:
         ap.error("--push requires --repo")
+    if args.asr_only and not args.asr:
+        ap.error("--asr-only requires --asr")
     for cmd in ("ffmpeg","ffprobe"):
         if not shutil.which(cmd):
             raise RuntimeError(f"{cmd} not found in PATH; install FFmpeg first.")
@@ -154,40 +173,68 @@ def main():
             raise RuntimeError(f"Video duration {duration/60:.1f}m exceeds max {args.max_minutes}m")
         video_id=safe_id(info.get("id") or info.get("display_id") or "clip")
         packet=base/video_id
-        packet.mkdir(parents=True, exist_ok=True)
-        sheets,nframes=make_sheets(video,packet/"images",duration,args.fps)
-        subtitle=subtitles_from_download(temp,packet)
-        transcript=None
-        asr_note=None
+        previous_manifest=None
+        if args.asr_only:
+            manifest_path=packet/"manifest.json"
+            if not manifest_path.is_file():
+                raise RuntimeError(f"Cannot repair ASR: packet not found: {manifest_path}")
+            previous_manifest=json.loads(manifest_path.read_text(encoding="utf-8"))
+            sheets=previous_manifest.get("image_sheets",[])
+            nframes=previous_manifest.get("sampled_frames",0)
+            subtitle=previous_manifest.get("subtitle_file")
+            if not isinstance(sheets,list) or not all((packet/sheet).is_file() for sheet in sheets):
+                raise RuntimeError("Existing packet images are missing; cannot use --asr-only")
+        else:
+            packet.mkdir(parents=True, exist_ok=True)
+            sheets,nframes=make_sheets(video,packet/"images",duration,args.fps)
+            subtitle=subtitles_from_download(temp,packet)
+        transcript=previous_manifest.get("transcript_file") if previous_manifest else None
+        if transcript and not (packet/transcript).is_file():
+            transcript=None
+        asr_note=previous_manifest.get("asr_note") if previous_manifest else None
+        asr_failure=None
         if args.asr:
             try:
                 transcript,asr_note=offline_asr(video,packet,args.asr_model)
             except Exception as e:
+                asr_failure=str(e)
                 asr_note=f"ASR failed: {e}"
                 print(asr_note,file=sys.stderr)
         if not transcript and not subtitle:
             (packet/"TRANSCRIPT_MISSING.txt").write_text(
-                "No available subtitles. For spoken dialogue install faster-whisper "
-                "and rerun with --asr.\n",encoding="utf-8")
-        manifest={
-            "title":info.get("title"),"video_id":info.get("id"),
-            "url":info.get("webpage_url") or args.url,
-            "duration_seconds":round(duration,3),
-            "frame_sampling_fps":args.fps,"sampled_frames":nframes,
-            "image_sheets":sheets,"subtitle_file":subtitle,
-            "transcript_file":transcript,"asr_note":asr_note,
-            "generated_utc":datetime.now(timezone.utc).isoformat(),
-            "privacy":"Screenshots/transcript only. No original video or browser cookies uploaded."
-        }
+                "No subtitles or usable ASR transcript. Run again with --asr.\n",
+                encoding="utf-8")
+        else:
+            (packet/"TRANSCRIPT_MISSING.txt").unlink(missing_ok=True)
+        if previous_manifest:
+            manifest=previous_manifest
+            manifest.update({
+                "transcript_file":transcript,"asr_note":asr_note,
+                "asr_updated_utc":datetime.now(timezone.utc).isoformat(),
+            })
+        else:
+            manifest={
+                "title":info.get("title"),"video_id":info.get("id"),
+                "url":info.get("webpage_url") or args.url,
+                "duration_seconds":round(duration,3),
+                "frame_sampling_fps":args.fps,"sampled_frames":nframes,
+                "image_sheets":sheets,"subtitle_file":subtitle,
+                "transcript_file":transcript,"asr_note":asr_note,
+                "generated_utc":datetime.now(timezone.utc).isoformat(),
+                "privacy":"Screenshots/transcript only. No original video or browser cookies uploaded."
+            }
         (packet/"manifest.json").write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding="utf-8")
-        (packet/"README.txt").write_text(
-            f"Title: {manifest['title']}\nOriginal: {manifest['url']}\n"
-            f"Duration: {clock(duration)}\n"
-            f"Read manifest.json, then sheets in order. Sampled at {args.fps}fps.\n"
-            "For detailed examination, request targeted frames or denser sampling.\n",
-            encoding="utf-8")
-        print(f"\nDONE: {packet}")
+        if not previous_manifest:
+            (packet/"README.txt").write_text(
+                f"Title: {manifest['title']}\nOriginal: {manifest['url']}\n"
+                f"Duration: {clock(duration)}\n"
+                f"Read manifest.json, then sheets in order. Sampled at {args.fps}fps.\n"
+                "For detailed examination, request targeted frames or denser sampling.\n",
+                encoding="utf-8")
+        print(f"\n{'PARTIAL' if asr_failure else 'DONE'}: {packet}")
         print(f"Image sheets: {len(sheets)}, frames: {nframes}; transcript={transcript or subtitle or 'NONE'}")
+        if asr_failure:
+            raise RuntimeError("ASR transcription failed; saved the local packet, but did not push it.")
         if args.push:
             rel=packet.relative_to(repo)
             run(["git","add","--",str(rel)],cwd=repo)
